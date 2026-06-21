@@ -39,7 +39,7 @@
   }
   @keyframes float {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+    50% { transform: translateY(-3px); }
   }
 
   h2 {
@@ -78,17 +78,33 @@
     transform: translateY(-1px);
   }
 
-  /* PC 端欢迎页 — 与 ago.html .pc-welcome 一致 */
+  /* PC 端欢迎页 */
   .is-pc .timi-hero {
     width: 130px;
     height: 130px;
     margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .is-pc .timi-hero img {
+    display: block;
+    margin: 0 auto;
   }
   .is-pc h2 {
     font-size: 24px;
   }
 
-  /* 移动端欢迎页 — 与 ago.html .mob-welcome 一致 */
+  /* PC 端浮动幅度减小 */
+  .is-pc .timi-hero {
+    animation: floatSmall 3s ease-in-out infinite;
+  }
+  @keyframes floatSmall {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+
+  /* 移动端欢迎页 */
   @media (max-width: 768px) {
     .welcome-card {
       padding: 0 4px;
@@ -97,6 +113,7 @@
       width: 80px !important;
       height: 80px !important;
       margin: 0 auto 12px !important;
+      transform: translateX(-15px) translateY(-10px)!important;
     }
     .welcome-card h2 {
       font-size: 18px !important;
