@@ -18,6 +18,9 @@
   let isPC = $state(true);
   let mobSidebarOpen = $state(false);
 
+  // 记录正在等待 API 回复的对话 ID，用于中断错位的回复
+  let pendingConvId = $state(null);
+
   let chatArea;
 
   // 初始化
@@ -45,6 +48,18 @@
     localStorage.setItem('timi_conversations', JSON.stringify(conversations));
   }
 
+  // 在 conversations 中查找并更新指定对话的消息
+  function updateConvMessages(convId, msgFn) {
+    const idx = conversations.findIndex(c => c.id === convId);
+    if (idx === -1) return;
+    // 创建新对象触发 Svelte 响应式更新
+    conversations = [
+      ...conversations.slice(0, idx),
+      { ...conversations[idx], messages: msgFn(conversations[idx].messages) },
+      ...conversations.slice(idx + 1),
+    ];
+  }
+
   function getConvById(id) {
     return conversations.find(c => c.id === id);
   }
@@ -66,14 +81,17 @@
     currentId = null;
     currentMessages = [];
     isLoading = false;
+    pendingConvId = null;
     mobSidebarOpen = false;
   }
 
   function switchConversation(id) {
+    // 切换时清除正在等待的回复
+    pendingConvId = null;
+    isLoading = false;
     const conv = getConvById(id);
     currentId = id;
     currentMessages = conv ? [...(conv.messages || [])] : [];
-    isLoading = false;
     scrollToBottom();
     mobSidebarOpen = false;
   }
@@ -85,6 +103,7 @@
       currentId = null;
       currentMessages = [];
       isLoading = false;
+      pendingConvId = null;
     }
   }
 
@@ -109,10 +128,14 @@
       saveConversations();
     }
 
+    // 记录当前对话 ID，用于判断后续回复是否应该被丢弃
+    pendingConvId = currentId;
+
     // 添加用户消息
     const userMsg = { role: 'user', content: text, time: getTime() };
     currentMessages = [...currentMessages, userMsg];
-    conv.messages = [...conv.messages, userMsg];
+    // 通过 updateConvMessages 更新 conversations 中的数据，确保响应式
+    updateConvMessages(currentId, msgs => [...msgs, userMsg]);
     saveConversations();
     scrollToBottom();
 
@@ -134,6 +157,12 @@
         }),
       });
 
+      // 检查：如果用户已经切换对话或新建对话，丢弃这个回复
+      if (pendingConvId !== currentId) {
+        isLoading = false;
+        return;
+      }
+
       let reply = '暂无回复';
       if (resp.ok) {
         const data = await resp.json();
@@ -142,17 +171,29 @@
         reply = '⚠️ 抱歉，服务暂时不可用，请稍后再试。';
       }
 
+      // 再次检查
+      if (pendingConvId !== currentId) {
+        isLoading = false;
+        return;
+      }
+
       const botMsg = { role: 'bot', content: reply, time: getTime() };
       currentMessages = [...currentMessages, botMsg];
-      conv.messages = [...conv.messages, botMsg];
+      updateConvMessages(currentId, msgs => [...msgs, botMsg]);
       saveConversations();
       scrollToBottom();
     } catch (err) {
       console.error('API 请求失败:', err);
+      // 检查
+      if (pendingConvId !== currentId) {
+        isLoading = false;
+        return;
+      }
+
       const errMsg = '⚠️ 网络异常，请检查连接后重试。';
       const botMsg = { role: 'bot', content: errMsg, time: getTime() };
       currentMessages = [...currentMessages, botMsg];
-      conv.messages = [...conv.messages, botMsg];
+      updateConvMessages(currentId, msgs => [...msgs, botMsg]);
       saveConversations();
       scrollToBottom();
     } finally {
@@ -203,7 +244,7 @@
     <div class="topbar pc-only">
       <div>
         <div class="topbar-title">Timi · 入学助手</div>
-        <div class="topbar-sub">有任何入学问题尽管问我吧</div>
+        <div class="topbar-sub">有什么入学问题尽管问我吧</div>
       </div>
     </div>
 
