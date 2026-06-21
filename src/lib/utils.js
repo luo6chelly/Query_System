@@ -23,9 +23,9 @@ const TIMI_WING_COLOR = 'rgba(173,216,255,.5)';
 const TIMI_WING_BORDER = '#89c4e8';
 const TIMI_BLUSH = 'rgba(255,150,150,.35)';
 
-// 全局Timi大图接口，自动替换为timi-new.png
+// 全局Timi大图接口，使用透明背景 PNG
 export function timiSVG(size) {
-  return `<img src="/timi-new.png" alt="Timi" style="width:${size}px;height:${size}px;object-fit:contain;border-radius:8px;">`;
+  return `<img src="/吉祥物timi.png" alt="Timi" style="width:${size}px;height:${size}px;object-fit:contain;border-radius:8px;">`;
 }
 
 // 新建对话加号图标
@@ -44,7 +44,7 @@ export function sendIconSVG() {
 
 // 聊天加载框迷你头像
 export function miniTimiSVG() {
-  return `<img src="/timi-new.png" alt="Timi" style="width:22px;height:22px;object-fit:contain;border-radius:6px;">`;
+  return `<img src="/吉祥物timi.png" alt="Timi" style="width:22px;height:22px;object-fit:contain;border-radius:6px;">`;
 }
 
 // 用户头像svg 保持原样
