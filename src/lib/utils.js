@@ -1,6 +1,6 @@
 // CONFIG
 export const CONFIG = {
-  API_URL: "https://5e4066a7.r24.cpolar.top/v1/chat-messages",
+  API_URL: "https://c9d7962.r24.cpolar.top/v1/chat-messages",
   API_KEY: "app-MwVxxlTE17Cv5o3BkhypOucL",
 };
 
